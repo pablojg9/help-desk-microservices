@@ -1,8 +1,8 @@
 package br.com.gntech.userserviceapi.service.user;
 
-import br.com.gntech.userserviceapi.entity.User;
+import models.record.user.UserResponseRecord;
 
 public interface UserService {
 
-  User findById(String id);
+  UserResponseRecord findById(String id);
 }
