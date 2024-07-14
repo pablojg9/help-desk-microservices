@@ -1,4 +1,4 @@
-package models.record.user;
+package models.records.response.user;
 
 import models.enums.ProfileEnum;
 

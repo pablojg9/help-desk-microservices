@@ -6,3 +6,9 @@ spring:
     mongodb:
       uri: 'mongodb+srv://help-desk-user:help-desk-user@helpdeskcluster.q1ybala.mongodb.net/helpdeskdb?retryWrites=true&w=majority&appName=HelpDeskCluster'
       auto-index-creation: true
+
+springdoc:
+  openai:
+    title: 'User Service API'
+    description: 'Component responsible for user management created on backend API'
+    version: '1.0.0'
