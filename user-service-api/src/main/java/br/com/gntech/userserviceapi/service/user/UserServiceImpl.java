@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import models.exceptions.ResourceNotFoundException;
 import models.records.request.user.UserRequestRecord;
 import models.records.response.user.UserResponseRecord;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,7 +28,17 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public void save(UserRequestRecord userRequestRecord) {
+    verifyIfEmailAlreadyExists(userRequestRecord.email(), null);
+
     User user = userRequestMapper.dtoToEntity(userRequestRecord);
     userRepository.save(user);
+  }
+
+  private void verifyIfEmailAlreadyExists(final String email, final String id) {
+    userRepository.findByEmail(email)
+      .filter(c -> !c.getId().equals(id))
+      .ifPresent(user -> {
+        throw new DataIntegrityViolationException("User with email " + email + " already exists");
+      });
   }
 }

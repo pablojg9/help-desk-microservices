@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import models.exceptions.ResourceNotFoundException;
 import models.exceptions.ValidationException;
 import models.exceptions.record.StandardErrorDTO;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -20,7 +21,12 @@ public class ControllerExceptionHandler {
 
   @ExceptionHandler(ResourceNotFoundException.class)
   public ResponseEntity<StandardErrorDTO> handleNotFoundException(final ResourceNotFoundException e, final HttpServletRequest request) {
-    return buildResponse(Collections.singleton(e.getMessage()), request);
+    return buildResponse(Collections.singleton(e.getMessage()), request, HttpStatus.NOT_FOUND);
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<StandardErrorDTO> handleDataIntegrityViolationException(final DataIntegrityViolationException e, final HttpServletRequest request) {
+    return buildResponse(Collections.singleton(e.getMessage()), request, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -34,19 +40,19 @@ public class ControllerExceptionHandler {
       .errors(new ArrayList<>())
       .build();
 
-    e.getBindingResult().getFieldErrors().forEach(x -> validationException.addError(x.getField(), x.getDefaultMessage()));
-
+    e.getBindingResult().getFieldErrors()
+      .forEach(c -> validationException.addError(c.getField(), c.getDefaultMessage()));
 
     return ResponseEntity.badRequest().body(validationException);
   }
 
-  private ResponseEntity<StandardErrorDTO> buildResponse(final Collection<String> messages, final HttpServletRequest request) {
+  private ResponseEntity<StandardErrorDTO> buildResponse(final Collection<String> messages, final HttpServletRequest request, HttpStatus status) {
     StandardErrorDTO error = StandardErrorDTO.builder()
       .timestamp(Instant.now())
-      .status(HttpStatus.NOT_FOUND.value())
+      .status(status.value())
       .error(messages)
       .path(request.getRequestURI())
       .build();
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    return ResponseEntity.status(status).body(error);
   }
 }
